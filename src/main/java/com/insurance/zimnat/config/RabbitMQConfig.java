@@ -7,6 +7,7 @@ package com.insurance.zimnat.config;
  */
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.amqp.core.*;
@@ -26,6 +27,10 @@ import org.springframework.util.ErrorHandler;
 @EnableRabbit
 @Configuration
 public class RabbitMQConfig {
+
+    /**
+     * define varibale to hold values defined in the properties file
+     */
     @Value("${rabbitmq.queue}")
     private String queueName;
     @Value("${rabbitmq.exchange}")
@@ -46,23 +51,50 @@ public class RabbitMQConfig {
     private Integer concurrentConsumers;
     @Value("${rabbitmq.max.concurrent.consumers}")
     private Integer maxConcurrentConsumers;
+
+    /**
+     * create a transient queue
+     * @return
+     */
     @Bean
     public Queue queue() {
         return new Queue(queueName, false);
     }
+
+    /**
+     * define a Direct exchange for direct routing to message queue
+     * @return
+     */
     @Bean
     public DirectExchange exchange() {
         return new DirectExchange(exchange);
     }
+
+    /**
+     *
+     * @param queue - the queue to bind to the exchange using a routing key
+     * @param exchange - the exchange to which the queue is bound
+     * @return - Binding object
+     */
     @Bean
     public Binding binding(Queue queue, DirectExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(routingkey);
     }
+
+    /**
+     * The converter to ensure conversion of messages to json and back to object
+     * @return MessageConverter
+     */
     @Bean
     public MessageConverter jsonMessageConverter() {
         ObjectMapper objectMapper = new ObjectMapper();
         return new Jackson2JsonMessageConverter(objectMapper);
     }
+
+    /**
+     * the connection factory to facilitate connection and authentication to the broker
+     * @return ConnectionFactory
+     */
     @Bean
     public ConnectionFactory connectionFactory() {
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
@@ -72,6 +104,12 @@ public class RabbitMQConfig {
         connectionFactory.setPassword(password);
         return connectionFactory;
     }
+
+    /**
+     *
+     * @param connectionFactory - the
+     * @return Advanced message queue protocol Template
+     */
     @Bean
     public AmqpTemplate rabbitTemplating(ConnectionFactory connectionFactory) {
         final RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
@@ -82,10 +120,20 @@ public class RabbitMQConfig {
         rabbitTemplate.setUseDirectReplyToContainer(false);
         return rabbitTemplate;
     }
+
+    /**
+     * Create the rabbitAdmin bean using the connectionFactory
+     * @return
+     */
     @Bean
     public AmqpAdmin amqpAdmin() {
         return new RabbitAdmin(connectionFactory());
     }
+
+    /**
+     * set configuration for rabbitMQ consumer(s) and decouple it using beans
+     * @return
+     */
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory() {
         final SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
@@ -96,17 +144,27 @@ public class RabbitMQConfig {
         factory.setErrorHandler(errorHandler());
         return factory;
     }
+
+    /**
+     * Define the error handler for the AMQP as a bean
+     * @return
+     */
     @Bean
     public ErrorHandler errorHandler() {
         return new ConditionalRejectingErrorHandler(new MyFatalExceptionStrategy());
     }
+
+    /**
+     * Define the DefaultExceptionStrategy class through inheritance
+     */
+    @Slf4j
     public static class MyFatalExceptionStrategy extends ConditionalRejectingErrorHandler.DefaultExceptionStrategy {
-        private final Logger logger = LogManager.getLogger(getClass());
+
         @Override
         public boolean isFatal(Throwable t) {
             if (t instanceof ListenerExecutionFailedException) {
                 ListenerExecutionFailedException lef = (ListenerExecutionFailedException) t;
-                logger.error("Failed to process inbound message from queue "
+                log.error("Failed to process inbound message from queue "
                         + lef.getFailedMessage().getMessageProperties().getConsumerQueue()
                         + "; failed message: " + lef.getFailedMessage(), t);
             }

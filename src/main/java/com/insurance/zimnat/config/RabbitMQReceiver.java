@@ -16,6 +16,10 @@ import org.springframework.stereotype.Component;
 @RabbitListener(queues = "rabbitmq.queue", id = "listener")
 public class RabbitMQReceiver {
 
+    /**
+     * the receiver method
+     * @param message - the message received from the broker
+     */
     @RabbitHandler
     public void receiver(Message message) {
         log.info("Message listener invoked -: " + message.getMessage());

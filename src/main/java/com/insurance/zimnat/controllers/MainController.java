@@ -24,12 +24,6 @@ public class MainController {
 
     @Autowired
     RabbitMQSender rabbitMQSender;
-    /*"proxy": {
-        "/api": {
-            "target": "http://localhost:8080",
-                    "ws": true
-        }
-    },*/
 
     /**
      * the test method to see if the application is up and running.
@@ -40,11 +34,15 @@ public class MainController {
         return ResponseEntity.ok("1-2 testing");
     }
 
+    /**
+     * the send method accessed via http path
+     * @param postMessage
+     * @return - returns either a string message or http error 500
+     */
     @RequestMapping(value = "/send", method = RequestMethod.POST)
     public ResponseEntity<String> sendMessage(@RequestBody PostMessage postMessage){
         Message message=new Message();
         message.setMessage(postMessage.getMessage());
-        System.err.println("___________ Message::"+message);
         try{
             rabbitMQSender.send(message);
         }catch (Exception e){

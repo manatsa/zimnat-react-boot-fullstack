@@ -1,0 +1,22 @@
+Good morning,  Manatsa,
+
+Congratulations once again for making it to the second round of the ICT Manager selection process. Below is the case study which you be requested to come and present before a panel of assessors on:
+Wednesday December 14th, 2022, at 0900hrs.
+Allocated time for the presentation is 20minutes
+You may either bring your own laptop, flash stick or send it to me for ease of administration.
+
+Case study
+
+Design an application that matches records from two separate files based on value and description or name (different case). Assume there is no common identification field for both files. Your application or solution should have a simple and intuitive interface that can be used by people that are not tech savvy.
+
+
+
+Demonstrate how your system can post to an application that has no API defined.
+
+
+
+Do not hesitate to contact me for any queries.
+
+
+
+Kind regards

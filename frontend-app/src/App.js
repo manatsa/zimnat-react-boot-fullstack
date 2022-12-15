@@ -75,7 +75,23 @@ const App = () => {
         let results = [];
 
         // set results to all array elements found in both text1 and text2
-        results = text1.filter(s => text2.includes(s));
+        //results = text1.filter(s => text2.includes(s));
+        results=text1.filter(s=>{
+                let value=s.split(',')[0]?.split(':')[1];
+                let description=s.split(',')[1]?.split(':')[1];
+            let extra=s.split(',')[2]?.split(':')[1];
+
+                let results2=text2.filter(s2=> {
+                    let value2 = s2.split(',')[0]?.split(':')[1];
+                    let description2 = s2.split(',')[1]?.split(':')[1];
+                    let extra2=s.split(',')[2]?.split(':')[1];
+
+                    return ((value===value2 || description===description2) && extra2==extra)
+
+                })
+            return results2.length>0;
+
+        })
         setResult(results);
         setAfterCompare(true);
         setShowResults(true);
